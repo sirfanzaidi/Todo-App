@@ -5,12 +5,60 @@ This guide explains how to deploy your full-stack Todo app to production.
 ## Architecture
 
 - **Frontend**: Next.js 14 → Vercel
-- **Backend**: FastAPI → Railway (or Render/Fly.io)
+- **Backend**: FastAPI → Hugging Face Spaces (or Railway/Render/Fly.io)
 - **Database**: PostgreSQL → Neon (already configured)
 
 ---
 
-## 🚂 Step 1: Deploy Backend to Railway
+## 🤗 Step 1: Deploy Backend to Hugging Face Spaces
+
+1. **Create Hugging Face Account**
+   - Go to [huggingface.co](https://huggingface.co)
+   - Sign up or sign in
+
+2. **Create New Space**
+   - Click your profile → "New Space"
+   - **Space name**: `todo-backend` (or your choice)
+   - **License**: MIT
+   - **Select SDK**: Docker
+   - **Space hardware**: CPU basic (free tier)
+   - Make it **Public** or **Private**
+
+3. **Push Backend Code to Space**
+
+   **Option A: Via Git (Recommended)**
+   ```bash
+   cd backend
+   git init
+   git remote add hf https://huggingface.co/spaces/YOUR-USERNAME/todo-backend
+   git add .
+   git commit -m "Initial commit"
+   git push hf main
+   ```
+
+   **Option B: Via Web Upload**
+   - Upload `Dockerfile`, `requirements.txt`, `README.md`, and `src/` folder
+   - Upload `alembic/` and `alembic.ini`
+
+4. **Configure Secrets (Environment Variables)**
+   - Go to Space Settings → Repository secrets
+   - Add these secrets:
+     ```
+     DATABASE_URL=postgresql+psycopg://neondb_owner:npg_majpyhUOM7l1@ep-hidden-silence-ah7p6552-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require
+     SECRET_KEY=xFegF4GsklGD9-8-zOF9g6LY_OBAAwSrA8PiR8NGIAM
+     ALGORITHM=HS256
+     ACCESS_TOKEN_EXPIRE_MINUTES=10080
+     ENVIRONMENT=production
+     CORS_ORIGINS=https://your-frontend.vercel.app,http://localhost:3000
+     ```
+
+5. **Wait for Build**
+   - Hugging Face will build the Docker container
+   - Your API will be available at: `https://YOUR-USERNAME-todo-backend.hf.space`
+
+---
+
+## 🚂 Alternative: Deploy Backend to Railway
 
 1. **Sign up for Railway**
    - Go to [railway.app](https://railway.app)
