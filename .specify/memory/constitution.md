@@ -1,29 +1,34 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version Change: Initial → 1.0.0
-Change Type: MAJOR - Initial constitution ratification
+Version Change: 1.0.0 → 1.1.0
+Change Type: MINOR - Technology matrix expanded with phase-specific requirements
 
 Modified Principles:
-- All principles defined for the first time
+- Principle IV: Technology Stack and Platform Constraints → completely restructured with phase-specific matrices
 
 Added Sections:
-- Core Principles (5 principles covering SDD, Agent Behavior, Phase Governance, Technology Stack, Quality Standards)
-- Development Workflow
-- Governance
+- Phase I Technology Matrix (console-only)
+- Phase II Technology Matrix (full-stack web)
+- Phase III+ Technology Matrix (AI/agents/infrastructure)
+- Technology Phase Rules (authoritative policy)
+
+Removed Sections:
+- None
 
 Templates Requiring Updates:
-- ✅ plan-template.md: Constitution Check section aligns with principles
-- ✅ spec-template.md: User story requirements align with SDD workflow
-- ✅ tasks-template.md: Task structure reflects phase governance and testing standards
+- ✅ plan-template.md: Constitution Check section remains aligned (no changes needed)
+- ✅ spec-template.md: User story requirements remain aligned (no changes needed)
+- ✅ tasks-template.md: Task structure remains aligned (no changes needed)
 
 Follow-up TODOs:
 - None - all placeholders filled
 
-Rationale for MAJOR version:
-- This is the initial ratification of the constitution
-- Establishes foundational governance for all five phases of the project
-- Sets non-negotiable rules that all future work must follow
+Rationale for MINOR version:
+- New technology policy sections added for phase-specific requirements
+- Existing principles preserved and enhanced
+- No backward-incompatible governance changes
+- Establishes authoritative technology policy for Phase II
 -->
 
 # Evolution of Todo Project Constitution
@@ -104,43 +109,124 @@ Rationale for MAJOR version:
 
 ### IV. Technology Stack and Platform Constraints
 
-**Rule**: The Evolution of Todo project MUST use the following technology stack. Deviations require constitutional amendment.
+**Rule**: The Evolution of Todo project MUST use the technology stack defined for each phase. Deviations require constitutional amendment. This section is the **authoritative technology policy** for all phases.
 
-**Backend (All Phases)**:
+---
+
+#### Phase I Technology Matrix (Console Application)
+
+**Scope**: In-memory console application only
+
+**Allowed Technologies**:
 - **Language**: Python 3.11+
-- **Web Framework**: FastAPI
-- **ORM**: SQLModel
-- **Database**: Neon DB (PostgreSQL-compatible, serverless)
+- **Architecture**: Single-process console application
+- **Storage**: In-memory data structures only (no persistence)
+- **Testing**: pytest
+- **Linting**: Ruff
+- **Type Checking**: mypy
+- **Version Control**: Git with conventional commits
+
+**Prohibited in Phase I**:
+- ❌ Web frameworks (FastAPI, Flask, Django, etc.)
+- ❌ Databases (PostgreSQL, SQLite, etc.)
+- ❌ ORMs (SQLModel, SQLAlchemy, etc.)
+- ❌ Frontend frameworks (React, Next.js, etc.)
+- ❌ Authentication systems
+- ❌ REST/GraphQL APIs
+- ❌ External HTTP services
+
+**Rationale**: Phase I establishes core domain logic without infrastructure complexity. The console interface validates the todo management model before adding persistence or web layers.
+
+---
+
+#### Phase II Technology Matrix (Full-Stack Web Application)
+
+**Scope**: Persistent web application with authentication
+
+**Backend**:
+- **Language**: Python 3.11+
+- **Web Framework**: FastAPI (Python REST API)
+- **ORM/Data Layer**: SQLModel
+- **Database**: Neon Serverless PostgreSQL
 - **API Design**: RESTful APIs with OpenAPI documentation
 
-**Frontend (Phase III and Later)**:
+**Frontend**:
 - **Framework**: Next.js (React-based)
 - **Language**: TypeScript
 - **State Management**: As determined in phase-specific plans
 
-**AI and Agents (Phase III and Later)**:
+**Authentication**:
+- **System**: Better Auth (signup/signin)
+- **Scope**: User registration, login, session management
+
+**Development Tools**:
+- **Testing**: pytest (Python), Jest/React Testing Library (frontend)
+- **Linting**: Ruff (Python), ESLint (TypeScript)
+- **Type Checking**: mypy (Python), TypeScript compiler
+- **Version Control**: Git with conventional commits
+
+**Allowed Starting Phase II**:
+- ✅ Authentication (Better Auth)
+- ✅ Web frontend (Next.js/React/TypeScript)
+- ✅ Neon PostgreSQL database
+- ✅ SQLModel ORM
+- ✅ FastAPI REST endpoints
+
+**Prohibited in Phase II**:
+- ❌ AI/ML frameworks (OpenAI SDK, LangChain, etc.)
+- ❌ Agent frameworks (OpenAI Agents SDK, etc.)
+- ❌ Message queues (Kafka, RabbitMQ, etc.)
+- ❌ Container orchestration (Kubernetes)
+- ❌ Model Context Protocol (MCP)
+
+**Rationale**: Phase II adds persistence and user-facing web interface. The stack enables a complete full-stack application while deferring AI/agent complexity to later phases.
+
+---
+
+#### Phase III and Later Technology Matrix (Advanced Infrastructure)
+
+**Scope**: AI agents, cloud infrastructure, and orchestration
+
+**Additional Technologies (Phase III+)**:
 - **Agent Framework**: OpenAI Agents SDK
 - **Protocol**: Model Context Protocol (MCP) for tool integration
+- **AI/ML**: OpenAI API, embeddings, vector stores
 
-**Infrastructure (Phase IV and Later)**:
+**Additional Technologies (Phase IV+)**:
 - **Containerization**: Docker
 - **Orchestration**: Kubernetes
 - **Message Queue**: Apache Kafka
 - **Deployment**: Cloud-native architecture (provider TBD in phase specs)
 
-**Development Tools (All Phases)**:
-- **Testing**: pytest for Python, Jest/React Testing Library for frontend
-- **Linting**: Ruff (Python), ESLint (JavaScript/TypeScript)
-- **Type Checking**: mypy (Python), TypeScript compiler
-- **Version Control**: Git with conventional commits
+**Rationale**: Advanced infrastructure and AI capabilities are introduced only after the core application is stable. This reduces risk and ensures each capability is properly designed before implementation.
+
+---
+
+#### Technology Phase Rules (Authoritative Policy)
+
+| Capability | Phase I | Phase II | Phase III+ |
+|------------|---------|----------|------------|
+| In-memory storage | ✅ | ✅ | ✅ |
+| Console interface | ✅ | ✅ | ✅ |
+| PostgreSQL (Neon) | ❌ | ✅ | ✅ |
+| SQLModel ORM | ❌ | ✅ | ✅ |
+| FastAPI REST API | ❌ | ✅ | ✅ |
+| Next.js frontend | ❌ | ✅ | ✅ |
+| TypeScript | ❌ | ✅ | ✅ |
+| Authentication | ❌ | ✅ | ✅ |
+| AI/ML frameworks | ❌ | ❌ | ✅ |
+| Agent frameworks | ❌ | ❌ | ✅ |
+| Kubernetes | ❌ | ❌ | ✅ (Phase IV) |
+| Kafka | ❌ | ❌ | ✅ (Phase IV) |
 
 **Technology Evolution Rules**:
-- Core technologies (Python, FastAPI, SQLModel, Neon DB, Next.js) are LOCKED
+- Core technologies per phase are LOCKED once defined
 - Supporting tools may be updated within version constraints (e.g., pytest 7.x → 8.x)
 - New tools may be added if they complement (not replace) the stack
 - Major technology changes require constitutional amendment
+- Phase-specific technologies MUST NOT be used in earlier phases
 
-**Rationale**: A consistent technology stack ensures architectural coherence, reduces cognitive load, and enables code reuse across phases. These technologies were chosen for their modern capabilities, strong typing, cloud-native design, and agent integration support.
+**Rationale**: A consistent technology stack ensures architectural coherence, reduces cognitive load, and enables code reuse across phases. Phase isolation prevents premature complexity and ensures each phase delivers focused value.
 
 ### V. Quality Standards and Architectural Principles
 
@@ -284,4 +370,4 @@ Rationale for MAJOR version:
 
 ---
 
-**Version**: 1.0.0 | **Ratified**: 2025-12-28 | **Last Amended**: 2025-12-28
+**Version**: 1.1.0 | **Ratified**: 2025-12-28 | **Last Amended**: 2025-12-31

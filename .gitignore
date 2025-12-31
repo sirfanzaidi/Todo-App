@@ -56,3 +56,19 @@ dmypy.json
 
 # Logs
 *.log
+
+# Node.js / Frontend
+node_modules/
+.next/
+out/
+next-env.d.ts
+.vercel
+.turbo
+
+# Alembic
+alembic/versions/*.py
+!alembic/versions/__init__.py
+
+# Database
+*.db
+*.sqlite

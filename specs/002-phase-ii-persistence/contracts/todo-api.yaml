@@ -1,0 +1,282 @@
+openapi: 3.0.3
+info:
+  title: Phase II Todo App - Todo Management API
+  description: CRUD endpoints for managing authenticated user's todos
+  version: 1.0.0
+  contact:
+    name: Evolution of Todo - Phase II
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+  - url: https://api.example.com
+    description: Production server (TBD)
+
+paths:
+  /api/todos:
+    get:
+      summary: Retrieve all todos for authenticated user
+      description: Returns a list of todos owned by the current authenticated user, sorted by creation date (newest first)
+      operationId: getTodos
+      tags:
+        - Todos
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      responses:
+        '200':
+          description: Todos retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  todos:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TodoResponse'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                detail: Authentication required
+
+    post:
+      summary: Create a new todo
+      description: Create a new todo for the authenticated user
+      operationId: createTodo
+      tags:
+        - Todos
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+              properties:
+                title:
+                  type: string
+                  minLength: 1
+                  maxLength: 500
+                  description: Todo task description
+                  example: Buy groceries
+      responses:
+        '201':
+          description: Todo created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  todo:
+                    $ref: '#/components/schemas/TodoResponse'
+        '400':
+          description: Invalid input (empty title or exceeds 500 characters)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                detail: Title must be between 1 and 500 characters
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                detail: Authentication required
+
+  /api/todos/{id}:
+    put:
+      summary: Update an existing todo
+      description: Update the title and/or completion status of a todo. User can only update their own todos.
+      operationId: updateTodo
+      tags:
+        - Todos
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Todo UUID
+          schema:
+            type: string
+            format: uuid
+            example: 550e8400-e29b-41d4-a716-446655440000
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  minLength: 1
+                  maxLength: 500
+                  description: Updated todo title (optional)
+                  example: Buy groceries and cook dinner
+                is_completed:
+                  type: boolean
+                  description: Updated completion status (optional)
+                  example: true
+              description: At least one field (title or is_completed) must be provided
+      responses:
+        '200':
+          description: Todo updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  todo:
+                    $ref: '#/components/schemas/TodoResponse'
+        '400':
+          description: Invalid input (empty title or exceeds 500 characters)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                detail: Title must be between 1 and 500 characters
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                detail: Authentication required
+        '403':
+          description: Todo belongs to a different user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                detail: Not authorized to update this todo
+        '404':
+          description: Todo not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                detail: Todo not found
+
+    delete:
+      summary: Delete a todo
+      description: Permanently delete a todo. User can only delete their own todos.
+      operationId: deleteTodo
+      tags:
+        - Todos
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Todo UUID
+          schema:
+            type: string
+            format: uuid
+            example: 550e8400-e29b-41d4-a716-446655440000
+      responses:
+        '204':
+          description: Todo deleted successfully (no content)
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                detail: Authentication required
+        '403':
+          description: Todo belongs to a different user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                detail: Not authorized to delete this todo
+        '404':
+          description: Todo not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                detail: Todo not found
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token in Authorization header (if using token-based auth)
+    CookieAuth:
+      type: apiKey
+      in: cookie
+      name: session
+      description: Session cookie (if using cookie-based auth)
+
+  schemas:
+    TodoResponse:
+      type: object
+      description: Todo object returned in API responses
+      required:
+        - id
+        - title
+        - is_completed
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique todo identifier
+          example: 550e8400-e29b-41d4-a716-446655440000
+        title:
+          type: string
+          minLength: 1
+          maxLength: 500
+          description: Todo task description
+          example: Buy groceries
+        is_completed:
+          type: boolean
+          description: Completion status
+          example: false
+        created_at:
+          type: string
+          format: date-time
+          description: Todo creation timestamp
+          example: '2025-12-31T10:00:00Z'
+        updated_at:
+          type: string
+          format: date-time
+          description: Last update timestamp
+          example: '2025-12-31T11:30:00Z'
+
+    Error:
+      type: object
+      description: Standard error response
+      required:
+        - detail
+      properties:
+        detail:
+          type: string
+          description: Human-readable error message
+          example: An error occurred
