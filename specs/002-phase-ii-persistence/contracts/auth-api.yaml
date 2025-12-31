@@ -1,0 +1,218 @@
+openapi: 3.0.3
+info:
+  title: Phase II Todo App - Authentication API
+  description: Authentication endpoints for user signup, signin, and signout
+  version: 1.0.0
+  contact:
+    name: Evolution of Todo - Phase II
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+  - url: https://api.example.com
+    description: Production server (TBD)
+
+paths:
+  /api/auth/signup:
+    post:
+      summary: Create new user account
+      description: Register a new user with email and password. Returns user information and session token.
+      operationId: signup
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: User's email address (must be unique)
+                  example: user@example.com
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                  description: User's password (minimum 8 characters)
+                  example: SecurePassword123
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/UserResponse'
+                  session:
+                    $ref: '#/components/schemas/SessionResponse'
+        '400':
+          description: Invalid input (bad email format or weak password)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                detail: Invalid email format
+        '409':
+          description: Email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                detail: Email already registered
+
+  /api/auth/signin:
+    post:
+      summary: Authenticate existing user
+      description: Sign in with email and password. Returns user information and session token.
+      operationId: signin
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: User's email address
+                  example: user@example.com
+                password:
+                  type: string
+                  format: password
+                  description: User's password
+                  example: SecurePassword123
+      responses:
+        '200':
+          description: Sign in successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/UserResponse'
+                  session:
+                    $ref: '#/components/schemas/SessionResponse'
+        '400':
+          description: Missing email or password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                detail: Email and password are required
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                detail: Invalid email or password
+
+  /api/auth/signout:
+    post:
+      summary: End user session
+      description: Sign out the current user and invalidate their session
+      operationId: signout
+      tags:
+        - Authentication
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      responses:
+        '200':
+          description: Sign out successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Signed out successfully
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                detail: Not authenticated
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token in Authorization header (if using token-based auth)
+    CookieAuth:
+      type: apiKey
+      in: cookie
+      name: session
+      description: Session cookie (if using cookie-based auth)
+
+  schemas:
+    UserResponse:
+      type: object
+      description: User information returned in API responses (password excluded)
+      required:
+        - id
+        - email
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique user identifier
+          example: 550e8400-e29b-41d4-a716-446655440000
+        email:
+          type: string
+          format: email
+          description: User's email address
+          example: user@example.com
+        created_at:
+          type: string
+          format: date-time
+          description: Account creation timestamp
+          example: '2025-12-31T10:00:00Z'
+
+    SessionResponse:
+      type: object
+      description: Session information (structure depends on Better Auth implementation)
+      properties:
+        token:
+          type: string
+          description: JWT token (if using token-based authentication)
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        expires_at:
+          type: string
+          format: date-time
+          description: Session expiration time (optional)
+          example: '2025-12-31T22:00:00Z'
+
+    Error:
+      type: object
+      description: Standard error response
+      required:
+        - detail
+      properties:
+        detail:
+          type: string
+          description: Human-readable error message
+          example: An error occurred
