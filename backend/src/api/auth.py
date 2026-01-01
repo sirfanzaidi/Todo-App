@@ -5,6 +5,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlmodel import Session, select
 
+from ..core.config import settings
 from ..core.database import get_session
 from ..models.user import User, UserCreate, UserSignin, UserResponse
 from ..services.auth_service import (
@@ -15,6 +16,11 @@ from ..services.auth_service import (
 from .deps import get_current_user
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
+
+# Cookie settings based on environment
+IS_PRODUCTION = settings.ENVIRONMENT == "production"
+COOKIE_SECURE = IS_PRODUCTION  # True in production (HTTPS), False in dev (HTTP)
+COOKIE_SAMESITE = "none" if IS_PRODUCTION else "lax"  # "none" for cross-site in production
 
 
 @router.post("/signup", status_code=status.HTTP_201_CREATED)
@@ -88,8 +94,8 @@ async def signup(
         key="session",
         value=access_token,
         httponly=True,  # JavaScript cannot access
-        secure=False,  # Set to False for local development (http)
-        samesite="lax",  # CSRF protection
+        secure=COOKIE_SECURE,  # True in production (HTTPS), False in dev
+        samesite=COOKIE_SAMESITE,  # "none" for cross-site in production, "lax" in dev
         max_age=7 * 24 * 60 * 60,  # 7 days
     )
 
@@ -151,8 +157,8 @@ async def signin(
         key="session",
         value=access_token,
         httponly=True,
-        secure=False, # Changed to False for local dev
-        samesite="lax",
+        secure=COOKIE_SECURE,  # True in production (HTTPS), False in dev
+        samesite=COOKIE_SAMESITE,  # "none" for cross-site in production, "lax" in dev
         max_age=7 * 24 * 60 * 60,  # 7 days
     )
 
@@ -183,7 +189,7 @@ async def signout(
         Success message
     """
     # Clear session cookie
-    response.delete_cookie(key="session", samesite="lax")
+    response.delete_cookie(key="session", samesite=COOKIE_SAMESITE)
 
     return {"message": "Signed out successfully"}
 
