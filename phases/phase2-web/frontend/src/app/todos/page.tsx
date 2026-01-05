@@ -13,6 +13,7 @@ import {
 import { useToast } from '@/components/Toast'
 import TodoForm from '@/components/TodoForm'
 import TodoList from '@/components/TodoList'
+import ChatWidget from '@/components/ChatWidget'
 import type { Todo } from '@/types'
 
 export default function TodosPage() {
@@ -293,6 +294,9 @@ export default function TodosPage() {
 
       {/* Todo list */}
       <TodoList todos={todos} onUpdate={handleUpdate} onDelete={handleDelete} />
+
+      {/* AI Chat Widget */}
+      <ChatWidget />
 
       {/* Responsive styles */}
       <style jsx>{`

@@ -1,17 +1,16 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version Change: 1.0.0 → 1.1.0
-Change Type: MINOR - Technology matrix expanded with phase-specific requirements
+Version Change: 1.1.0 → 1.2.0
+Change Type: MINOR - Phase III technology matrix expanded with AI/MCP/conversation capabilities
 
 Modified Principles:
-- Principle IV: Technology Stack and Platform Constraints → completely restructured with phase-specific matrices
+- Principle IV: Technology Stack and Platform Constraints → Phase III section completely expanded
 
 Added Sections:
-- Phase I Technology Matrix (console-only)
-- Phase II Technology Matrix (full-stack web)
-- Phase III+ Technology Matrix (AI/agents/infrastructure)
-- Technology Phase Rules (authoritative policy)
+- Phase III Technology Matrix (AI agents, MCP, chat interface)
+- Phase III specific rules for AI agents, MCP tools, conversation persistence
+- Updated Technology Phase Rules table with Phase III capabilities
 
 Removed Sections:
 - None
@@ -24,11 +23,12 @@ Templates Requiring Updates:
 Follow-up TODOs:
 - None - all placeholders filled
 
-Rationale for MINOR version:
-- New technology policy sections added for phase-specific requirements
-- Existing principles preserved and enhanced
+Rationale for MINOR version bump (1.1.0 → 1.2.0):
+- New Phase III technology requirements added
+- Existing Phase I and Phase II matrices preserved unchanged
+- Phase isolation rules strengthened for AI/MCP restrictions
 - No backward-incompatible governance changes
-- Establishes authoritative technology policy for Phase II
+- Establishes authoritative technology policy for Phase III
 -->
 
 # Evolution of Todo Project Constitution
@@ -183,14 +183,62 @@ Rationale for MINOR version:
 
 ---
 
-#### Phase III and Later Technology Matrix (Advanced Infrastructure)
+#### Phase III Technology Matrix (AI Agents and Natural Language Interface)
 
-**Scope**: AI agents, cloud infrastructure, and orchestration
+**Scope**: AI-powered natural language todo management with conversation persistence
 
-**Additional Technologies (Phase III+)**:
-- **Agent Framework**: OpenAI Agents SDK
-- **Protocol**: Model Context Protocol (MCP) for tool integration
-- **AI/ML**: OpenAI API, embeddings, vector stores
+**Backend (Extends Phase II)**:
+- **AI Framework**: OpenAI Agents SDK (Python)
+- **MCP Server**: Official Model Context Protocol SDK (modelcontextprotocol/python-sdk)
+- **Chat Endpoint**: Stateless POST `/api/chat` or `/api/{user_id}/chat`
+- **Conversation Persistence**:
+  - New `Conversation` and `Message` models in Neon PostgreSQL via SQLModel
+  - Conversation history persisted in database (NOT in-memory)
+- **Agent Behavior**: Natural language understanding for all 5 basic todo features:
+  - Add task (create new todos from natural language)
+  - List tasks (query and display todos)
+  - Update task (modify existing todos)
+  - Delete task (remove todos)
+  - Complete task (mark todos as done)
+
+**MCP Tools (Stateless)**:
+- `add_task`: Create new task with authenticated user_id
+- `list_tasks`: Retrieve tasks for authenticated user_id
+- `update_task`: Modify existing task for authenticated user_id
+- `delete_task`: Remove task for authenticated user_id
+- `complete_task`: Mark task complete for authenticated user_id
+
+**Frontend (Extends Phase II)**:
+- **Chat Interface**: OpenAI ChatKit (web component)
+- **Integration**: Chat component communicates with backend chat endpoint
+- **User Context**: All requests authenticated with user_id from Phase II auth
+
+**Phase III Specific Rules**:
+- ✅ AI agents and MCP tools ALLOWED starting Phase III
+- ✅ All MCP tools MUST be stateless and use authenticated user_id
+- ✅ Conversation history MUST be persisted in database (not in-memory)
+- ✅ Agent MUST build on existing Phase II authentication (no new auth system)
+- ❌ Event-driven architecture (Kafka/Dapr) NOT allowed until Phase V
+- ❌ Advanced todo features NOT allowed until Phase V:
+  - NO recurring tasks
+  - NO due dates or reminders
+  - NO priorities or tags
+  - NO search/filter/sort capabilities beyond basic list
+
+**Prohibited in Phase III**:
+- ❌ Event-driven architecture (Kafka, RabbitMQ, Dapr)
+- ❌ Container orchestration (Kubernetes)
+- ❌ Advanced todo features (recurring, priorities, tags, advanced search)
+- ❌ In-memory conversation state (must use database)
+- ❌ Stateful MCP tools (all tools must use user_id parameter)
+
+**Rationale**: Phase III adds natural language interaction to the existing web application without changing the core todo model. By requiring conversation persistence in the database and stateless MCP tools, we ensure the system remains scalable and cloud-ready. Advanced features are deferred to Phase V to maintain focus on stable AI integration.
+
+---
+
+#### Phase IV and Later Technology Matrix (Advanced Infrastructure)
+
+**Scope**: Cloud infrastructure, orchestration, and advanced deployment
 
 **Additional Technologies (Phase IV+)**:
 - **Containerization**: Docker
@@ -198,26 +246,33 @@ Rationale for MINOR version:
 - **Message Queue**: Apache Kafka
 - **Deployment**: Cloud-native architecture (provider TBD in phase specs)
 
-**Rationale**: Advanced infrastructure and AI capabilities are introduced only after the core application is stable. This reduces risk and ensures each capability is properly designed before implementation.
+**Rationale**: Advanced infrastructure capabilities are introduced only after the AI-powered application is stable. This reduces risk and ensures each capability is properly designed before implementation.
 
 ---
 
 #### Technology Phase Rules (Authoritative Policy)
 
-| Capability | Phase I | Phase II | Phase III+ |
-|------------|---------|----------|------------|
-| In-memory storage | ✅ | ✅ | ✅ |
-| Console interface | ✅ | ✅ | ✅ |
-| PostgreSQL (Neon) | ❌ | ✅ | ✅ |
-| SQLModel ORM | ❌ | ✅ | ✅ |
-| FastAPI REST API | ❌ | ✅ | ✅ |
-| Next.js frontend | ❌ | ✅ | ✅ |
-| TypeScript | ❌ | ✅ | ✅ |
-| Authentication | ❌ | ✅ | ✅ |
-| AI/ML frameworks | ❌ | ❌ | ✅ |
-| Agent frameworks | ❌ | ❌ | ✅ |
-| Kubernetes | ❌ | ❌ | ✅ (Phase IV) |
-| Kafka | ❌ | ❌ | ✅ (Phase IV) |
+| Capability | Phase I | Phase II | Phase III | Phase IV+ |
+|------------|---------|----------|-----------|-----------|
+| In-memory storage | ✅ | ✅ | ✅ | ✅ |
+| Console interface | ✅ | ✅ | ✅ | ✅ |
+| PostgreSQL (Neon) | ❌ | ✅ | ✅ | ✅ |
+| SQLModel ORM | ❌ | ✅ | ✅ | ✅ |
+| FastAPI REST API | ❌ | ✅ | ✅ | ✅ |
+| Next.js frontend | ❌ | ✅ | ✅ | ✅ |
+| TypeScript | ❌ | ✅ | ✅ | ✅ |
+| Authentication (Better Auth) | ❌ | ✅ | ✅ | ✅ |
+| OpenAI Agents SDK | ❌ | ❌ | ✅ | ✅ |
+| Model Context Protocol (MCP) | ❌ | ❌ | ✅ | ✅ |
+| OpenAI ChatKit | ❌ | ❌ | ✅ | ✅ |
+| Conversation persistence | ❌ | ❌ | ✅ | ✅ |
+| Stateless MCP tools | ❌ | ❌ | ✅ | ✅ |
+| Advanced todo features* | ❌ | ❌ | ❌ | ✅ (Phase V) |
+| Event-driven (Kafka/Dapr) | ❌ | ❌ | ❌ | ✅ (Phase V) |
+| Kubernetes | ❌ | ❌ | ❌ | ✅ |
+| Docker containers | ❌ | ❌ | ❌ | ✅ |
+
+*Advanced todo features: recurring tasks, due dates, priorities, tags, advanced search/filter/sort
 
 **Technology Evolution Rules**:
 - Core technologies per phase are LOCKED once defined
@@ -370,4 +425,4 @@ Rationale for MINOR version:
 
 ---
 
-**Version**: 1.1.0 | **Ratified**: 2025-12-28 | **Last Amended**: 2025-12-31
+**Version**: 1.2.0 | **Ratified**: 2025-12-28 | **Last Amended**: 2026-01-05
