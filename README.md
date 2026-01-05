@@ -1,154 +1,163 @@
-# Evolution of Todo - Phase I
+# Hackathon Todo - Monorepo
 
-**In-Memory Console Todo Application**
+A production-ready todo application built through iterative phases, demonstrating modern software development practices from console app to cloud deployment.
 
-A simple command-line todo list manager for tracking tasks. All data is stored in memory and lost when the application closes.
+## 🎯 Project Vision
 
-## Features
+This project showcases the evolution of a simple todo application through five distinct phases:
 
-- ✅ Add tasks with unique sequential IDs
-- ✅ View all tasks with descriptions and completion status
-- ✅ Update task descriptions
-- ✅ Delete tasks
-- ✅ Mark tasks as complete or incomplete
-- ✅ Clean application exit
+1. **Phase 1: Console App** - Command-line todo manager with in-memory storage
+2. **Phase 2: Web Application** - Full-stack web app with React + FastAPI
+3. **Phase 3: Chatbot Integration** - AI-powered natural language interface via MCP
+4. **Phase 4: Kubernetes** - Container orchestration and production deployment
+5. **Phase 5: Cloud & CI/CD** - Infrastructure automation and continuous deployment
 
-## Prerequisites
+## 📁 Monorepo Structure
 
-- Python 3.11 or higher
-
-To check your Python version:
-```bash
-python --version
-# or
-python3 --version
+```
+hackathon-todo/
+├── .spec-kit/              # Spec-Kit Plus configuration
+│   ├── scripts/            # Automation scripts
+│   └── templates/          # Templates for specs, plans, tasks, ADRs
+├── specs/                  # Specifications for all phases
+│   ├── phase1-console/     # Phase 1: Console app specs
+│   ├── phase2-web/         # Phase 2: Web app specs
+│   ├── phase3-chatbot/     # Phase 3: Chatbot specs (planned)
+│   ├── phase4-k8s/         # Phase 4: Kubernetes specs (planned)
+│   └── phase5-cloud/       # Phase 5: Cloud deployment specs (planned)
+├── phases/                 # Implementation code for each phase
+│   ├── phase1-console/     # Console app implementation
+│   │   ├── src/
+│   │   ├── tests/
+│   │   ├── README.md
+│   │   └── requirements.txt
+│   ├── phase2-web/         # Web app implementation
+│   │   ├── frontend/       # Next.js frontend
+│   │   ├── backend/        # FastAPI backend
+│   │   ├── docker-compose.yml
+│   │   └── README.md
+│   ├── phase3-chatbot/     # Chatbot implementation (planned)
+│   ├── phase4-k8s/         # Kubernetes configs (planned)
+│   └── phase5-cloud/       # Cloud infrastructure (planned)
+├── shared/                 # Shared utilities (use sparingly)
+├── history/                # Project history
+│   ├── prompts/            # Prompt History Records (PHRs)
+│   └── adr/                # Architecture Decision Records
+├── CLAUDE.md               # Claude Code development rules
+├── AGENTS.md               # Agent constitution and guidelines
+└── README.md               # This file
 ```
 
-## Installation
+## 🚀 Quick Start
 
-No external dependencies required! This application uses only Python's standard library.
-
-```bash
-# Clone the repository
-git clone <repository-url>
-cd todo-app
-```
-
-## Running the Application
-
-From the project root directory:
+### Phase 1: Console App
 
 ```bash
+cd phases/phase1-console
+pip install -r requirements.txt
 python src/todo_app.py
 ```
 
-Or on some systems:
+### Phase 2: Web Application
+
+**Using Docker Compose (Recommended)**:
 ```bash
-python3 src/todo_app.py
+cd phases/phase2-web
+docker-compose up -d
 ```
 
-## Usage
-
-The application presents a menu-driven interface:
-
-```
-=== Todo Application ===
-1. Add Task
-2. View Tasks
-3. Update Task
-4. Delete Task
-5. Mark Task Complete
-6. Mark Task Incomplete
-7. Exit
-
-Enter your choice:
-```
-
-### Basic Operations
-
-**Add a Task**:
-1. Select option `1`
-2. Enter a description for your task
-3. Task is added with a unique ID
-
-**View Tasks**:
-1. Select option `2`
-2. See all tasks with IDs, descriptions, and statuses
-
-**Update a Task**:
-1. Select option `3`
-2. Enter the task ID
-3. Enter the new description
-
-**Delete a Task**:
-1. Select option `4`
-2. Enter the task ID to delete
-
-**Mark Task Complete/Incomplete**:
-1. Select option `5` (complete) or `6` (incomplete)
-2. Enter the task ID
-
-**Exit**:
-1. Select option `7`
-2. Application closes (all data is lost)
-
-## Important Notes
-
-⚠️ **Data is NOT saved** - All tasks are stored in memory only and will be lost when you:
-- Exit the application
-- Close your terminal
-- Restart your computer
-
-This is by design for Phase I. Data persistence will be added in Phase II.
-
-## Project Structure
-
-```
-todo-app/
-├── src/
-│   └── todo_app.py      # Main application (single file)
-├── tests/               # Test files (future use)
-├── specs/               # Specifications and documentation
-│   └── 001-phase-i-console/
-│       ├── spec.md      # Feature specification
-│       ├── plan.md      # Implementation plan
-│       ├── data-model.md    # Data model design
-│       ├── quickstart.md    # User guide
-│       └── tasks.md     # Task breakdown
-└── README.md            # This file
-```
-
-## Development
-
-**Type Checking** (requires mypy):
+**Manual Setup**:
 ```bash
-mypy src/todo_app.py
+# Backend
+cd phases/phase2-web/backend
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+cp .env.example .env
+alembic upgrade head
+uvicorn src.main:app --reload
+
+# Frontend (in another terminal)
+cd phases/phase2-web/frontend
+npm install
+cp .env.local.example .env.local
+npm run dev
 ```
 
-**Linting** (requires ruff):
-```bash
-ruff check src/todo_app.py
-```
+Access the application:
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:8000
+- API Docs: http://localhost:8000/docs
 
-## Phase Information
+### Phase 3-5: Coming Soon
 
-This is **Phase I** of the Evolution of Todo project:
-- **Phase I**: In-memory console application (current)
-- **Phase II**: Data persistence with database
-- **Phase III**: Web interface and multi-user support
-- **Phase IV**: Cloud deployment
-- **Phase V**: AI-powered features
+Phases 3, 4, and 5 are in the planning stages. See their respective `specs/` folders for upcoming features.
 
-## License
+## 📊 Phase Progress
 
-See project license file.
+| Phase | Status | Description |
+|-------|--------|-------------|
+| Phase 1 | ✅ Complete | Console todo app with in-memory storage |
+| Phase 2 | ✅ Complete | Full-stack web app (Next.js + FastAPI) |
+| Phase 3 | 🚧 Planned | AI chatbot integration with MCP tools |
+| Phase 4 | 🚧 Planned | Kubernetes deployment and orchestration |
+| Phase 5 | 🚧 Planned | Cloud infrastructure and CI/CD automation |
 
-## Contributing
+## 🛠 Development Methodology
 
-This project follows Spec-Driven Development (SDD). All changes must go through:
-1. Specification update
-2. Planning
-3. Task breakdown
-4. Implementation
+This project follows **Spec-Driven Development (SDD)**:
 
-See `.specify/memory/constitution.md` for governance rules.
+1. **Specification** - Define requirements and acceptance criteria
+2. **Planning** - Architect the solution and make key decisions
+3. **Tasks** - Break down into testable, actionable tasks
+4. **Implementation** - Build following TDD (Red-Green-Refactor)
+5. **Documentation** - Capture decisions in ADRs, track progress in PHRs
+
+### Key Documents
+
+- **AGENTS.md** - Agent constitution, principles, and code quality standards
+- **CLAUDE.md** - Claude Code development rules and workflows
+- **specs/\*/spec.md** - Feature specifications for each phase
+- **specs/\*/plan.md** - Architecture and implementation plans
+- **specs/\*/tasks.md** - Task breakdowns with acceptance criteria
+
+## 🎓 Learning Objectives
+
+This project demonstrates:
+
+- **Progressive Enhancement**: Building complexity iteratively
+- **Separation of Concerns**: Clean architecture across phases
+- **Test-Driven Development**: Writing tests first
+- **Infrastructure as Code**: Kubernetes and Terraform
+- **Modern Web Stack**: React, Next.js, FastAPI, PostgreSQL
+- **AI Integration**: MCP protocol and agent-based interactions
+- **Production Readiness**: Security, monitoring, CI/CD
+
+## 🔒 Security
+
+- No secrets committed to repository
+- Environment variables for all configuration
+- JWT-based authentication in web app
+- CORS and CSRF protection
+- Input validation and sanitization
+- Follow OWASP Top 10 guidelines
+
+## 📝 Contributing
+
+All contributions must follow the SDD workflow:
+
+1. Create/update specification in `specs/`
+2. Document architectural decisions in ADRs if significant
+3. Break down into tasks
+4. Implement with tests
+5. Create PHR to document the work
+
+See **AGENTS.md** for detailed contribution guidelines and code standards.
+
+## 📄 License
+
+See LICENSE file for details.
+
+---
+
+**Built with Spec-Driven Development** | [Documentation](./specs) | [Agent Guidelines](./AGENTS.md)

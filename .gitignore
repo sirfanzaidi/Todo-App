@@ -72,3 +72,9 @@ alembic/versions/*.py
 # Database
 *.db
 *.sqlite
+
+# Claude Code
+.claude/settings.local.json
+
+# Temporary files
+nul
