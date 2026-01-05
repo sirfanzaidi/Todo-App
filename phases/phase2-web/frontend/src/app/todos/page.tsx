@@ -98,7 +98,7 @@ export default function TodosPage() {
 
   const handleUpdate = async (
     id: string,
-    updates: { title?: string; is_completed?: boolean }
+    updates: { title?: string; status?: string }
   ) => {
     // Optimistic update
     const previousTodos = todos

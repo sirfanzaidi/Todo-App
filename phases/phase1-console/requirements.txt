@@ -1,0 +1,2 @@
+# Phase 1 Console App Dependencies
+pytest>=7.0.0

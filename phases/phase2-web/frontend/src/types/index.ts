@@ -9,10 +9,12 @@ export interface User {
   created_at: string
 }
 
+export type TodoStatus = 'pending' | 'completed' | 'incomplete'
+
 export interface Todo {
   id: string
   title: string
-  is_completed: boolean
+  status: TodoStatus
   created_at: string
   updated_at: string
 }
