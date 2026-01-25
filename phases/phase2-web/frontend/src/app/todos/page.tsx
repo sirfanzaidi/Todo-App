@@ -3,18 +3,11 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
-import {
-  getTodos,
-  createTodo,
-  updateTodo,
-  deleteTodo,
-  SessionExpiredError,
-} from '@/lib/api'
+import { getTodos, createTodo, updateTodo, deleteTodo, SessionExpiredError } from '@/lib/api'
 import { useToast } from '@/components/Toast'
 import TodoForm from '@/components/TodoForm'
 import TodoList from '@/components/TodoList'
-import ChatWidget from '@/components/ChatWidget'
-import type { Todo } from '@/types'
+import type { Todo, TodoStatus } from '@/types'
 
 export default function TodosPage() {
   const router = useRouter()
@@ -22,302 +15,143 @@ export default function TodosPage() {
   const { showToast } = useToast()
   const [todos, setTodos] = useState<Todo[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
 
-  // Handle session expiration
-  const handleSessionExpired = () => {
-    showToast('Session expired. Please sign in again.', 'error')
-    logout()
-    router.push('/signin')
-  }
-
-  // Auth protection - redirect to signin if not authenticated
   useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/signin')
-    }
+    if (!authLoading && !user) router.push('/')
   }, [user, authLoading, router])
 
-  // Fetch todos on mount
   useEffect(() => {
-    if (user) {
-      fetchTodos()
-    }
+    if (user) fetchTodos()
   }, [user])
 
   const fetchTodos = async () => {
     setLoading(true)
-    setError('')
-
     try {
       const response: any = await getTodos()
       setTodos(response.todos || [])
     } catch (err) {
       if (err instanceof SessionExpiredError) {
-        handleSessionExpired()
-        return
+        showToast('Session expired.', 'error')
+        logout()
+        router.push('/')
       }
-      setError(err instanceof Error ? err.message : 'Failed to load todos')
+      showToast('System Load Failed', 'error')
     } finally {
       setLoading(false)
     }
   }
 
   const handleCreate = async (title: string) => {
-    const tempId = `temp-${Date.now()}`
-    const optimisticTodo: Todo = {
-      id: tempId,
-      title,
-      is_completed: false,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    }
-
-    // Optimistic update - add immediately
-    setTodos((prev) => [optimisticTodo, ...prev])
-    setError('')
-
     try {
       const response: any = await createTodo(title)
-      // Replace temp todo with server response
-      setTodos((prev) =>
-        prev.map((t) => (t.id === tempId ? response.todo : t))
-      )
+      setTodos((prev) => [response.todo, ...prev])
     } catch (err) {
-      // Revert on error
-      setTodos((prev) => prev.filter((t) => t.id !== tempId))
-
-      if (err instanceof SessionExpiredError) {
-        handleSessionExpired()
-        throw err
-      }
-
-      setError(err instanceof Error ? err.message : 'Failed to create todo')
-      throw err // Re-throw so TodoForm can show error
+      showToast('Creation failed', 'error')
+      throw err
     }
   }
 
-  const handleUpdate = async (
-    id: string,
-    updates: { title?: string; status?: string }
-  ) => {
-    // Optimistic update
-    const previousTodos = todos
-    setTodos((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, ...updates } : t))
-    )
-
+  const handleUpdate = async (id: string, updates: { title?: string; status?: TodoStatus }) => {
+    setTodos((prev) => prev.map((t) => (t.id === id ? { ...t, ...updates } : t)))
     try {
       await updateTodo(id, updates)
     } catch (err) {
-      // Revert on error
-      setTodos(previousTodos)
-
-      if (err instanceof SessionExpiredError) {
-        handleSessionExpired()
-        return
-      }
-
-      setError(err instanceof Error ? err.message : 'Failed to update todo')
+      fetchTodos() 
     }
   }
 
   const handleDelete = async (id: string) => {
-    // Optimistic update
-    const previousTodos = todos
     setTodos((prev) => prev.filter((t) => t.id !== id))
-
     try {
       await deleteTodo(id)
     } catch (err) {
-      // Revert on error
-      setTodos(previousTodos)
-
-      if (err instanceof SessionExpiredError) {
-        handleSessionExpired()
-        return
-      }
-
-      setError(err instanceof Error ? err.message : 'Failed to delete todo')
+      fetchTodos()
     }
   }
 
-  const handleSignout = async () => {
-    await logout()
-    router.push('/signin')
-  }
-
-  // Loading state
   if (authLoading || loading) {
     return (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          minHeight: '100vh',
-          position: 'relative',
-          zIndex: 1,
-        }}
-      >
-        <div style={{ textAlign: 'center' }}>
-          <div
-            style={{
-              width: '60px',
-              height: '60px',
-              margin: '0 auto 20px',
-              border: '3px solid rgba(99, 102, 241, 0.2)',
-              borderTop: '3px solid #667eea',
-              borderRadius: '50%',
-              animation: 'spin 1s linear infinite',
-            }}
-          />
-          <p style={{
-            color: '#9ca3af',
-            fontSize: '16px',
-            background: 'linear-gradient(135deg, #667eea 0%, #ec4899 50%, #22d3ee 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-          }}>
-            Loading...
-          </p>
-        </div>
-        <style jsx>{`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}</style>
+      <div className="min-h-screen bg-[#0a0e27] flex flex-col items-center justify-center">
+        <div className="w-8 h-8 border-2 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin mb-4" />
+        <p className="text-[10px] font-black tracking-[0.4em] text-cyan-400 uppercase italic">Synchronizing Node...</p>
       </div>
     )
   }
 
-  // Not authenticated
-  if (!user) {
-    return null
-  }
-
   return (
-    <div
-      style={{
-        padding: '40px 20px',
-        maxWidth: '900px',
-        margin: '0 auto',
-        minHeight: '100vh',
-        position: 'relative',
-        zIndex: 1,
-      }}
-    >
-      {/* Header */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '40px',
-          flexWrap: 'wrap',
-          gap: '16px',
-          padding: '24px',
-          background: 'rgba(255, 255, 255, 0.05)',
-          backdropFilter: 'blur(10px)',
-          WebkitBackdropFilter: 'blur(10px)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          borderRadius: '20px',
-          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
-        }}
-      >
-        <div>
-          <h1 style={{
-            margin: 0,
-            marginBottom: '8px',
-            fontSize: '32px',
-            fontWeight: '700',
-            background: 'linear-gradient(135deg, #667eea 0%, #ec4899 50%, #22d3ee 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-            letterSpacing: '-0.02em',
-          }}>
-            My Todos
+    <div className="min-h-screen bg-[#0a0e27] text-white selection:bg-cyan-500/30 relative overflow-hidden font-sans">
+      {/* Background Decor */}
+      <div className="fixed inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(#22d3ee_1px,transparent_1px)] [background-size:30px_30px]"></div>
+
+      {/* --- NAVIGATION (Synced to -10% Landing Scale) --- */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0a0e27]/90 backdrop-blur-md border-b border-white/10">
+        <div className="max-w-7xl mx-auto px-8 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-6">
+            <div className="text-xl font-black tracking-tighter uppercase">
+              TRANSCEND<span className="text-cyan-400">.</span>
+            </div>
+            <div className="h-4 w-[1px] bg-white/10 hidden md:block" />
+            <span className="text-[9px] font-bold text-gray-500 tracking-[0.3em] uppercase hidden md:block">
+              {user?.email}
+            </span>
+          </div>
+          <button 
+            onClick={() => { logout(); router.push('/'); }}
+            className="px-5 py-1.5 rounded-full text-[9px] font-black tracking-widest uppercase text-white/40 hover:text-red-400 hover:bg-red-400/10 transition-all border border-white/10 hover:border-red-500/30"
+          >
+            Terminate Session
+          </button>
+        </div>
+      </nav>
+
+      {/* --- MAIN CONTENT (Tightened Container) --- */}
+      <main className="relative pt-28 pb-20 max-w-2xl mx-auto px-6">
+        
+        <header className="mb-10">
+          <div className="inline-block px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/20 mb-4">
+            <span className="text-[9px] font-black text-cyan-400 uppercase tracking-[0.3em]">Status: Operational</span>
+          </div>
+          <h1 className="text-4xl font-black tracking-tighter mb-2 uppercase leading-none">
+            CENTRAL <span className="gradient-text">COMMAND.</span>
           </h1>
-          <p style={{ margin: 0, color: '#9ca3af', fontSize: '14px' }}>
-            {user.email}
+          <p className="text-gray-500 text-[9px] font-bold tracking-[0.5em] uppercase italic opacity-60">
+            System Node Alpha // v1.0.4
           </p>
+        </header>
+
+        {/* Action Layer (TodoForm needs to be compact inside its own code) */}
+        <div className="mb-12">
+          <TodoForm onSubmit={handleCreate} />
         </div>
-        <button
-          onClick={handleSignout}
-          style={{
-            padding: '10px 20px',
-            fontSize: '14px',
-            fontWeight: '500',
-            background: 'rgba(255, 255, 255, 0.1)',
-            color: '#e0e6ed',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
-            borderRadius: '12px',
-            cursor: 'pointer',
-            transition: 'all 0.3s ease',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'
-            e.currentTarget.style.transform = 'translateY(-2px)'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
-            e.currentTarget.style.transform = 'translateY(0)'
-          }}
-        >
-          Sign Out
-        </button>
-      </div>
 
-      {/* Error message */}
-      {error && (
-        <div
-          style={{
-            padding: '16px 20px',
-            marginBottom: '24px',
-            background: 'rgba(239, 68, 68, 0.1)',
-            color: '#fca5a5',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
-            borderRadius: '16px',
-            backdropFilter: 'blur(10px)',
-            WebkitBackdropFilter: 'blur(10px)',
-          }}
-        >
-          {error}
-        </div>
-      )}
+        {/* Task List Section */}
+        <section className="space-y-6">
+          <div className="flex items-center justify-between px-1 mb-6">
+            <h3 className="text-[10px] font-black tracking-[0.4em] text-cyan-400/40 uppercase">Active Directives</h3>
+            <div className="h-[1px] flex-1 mx-6 bg-white/5" />
+            <div className="flex gap-1.5">
+               <div className="w-1.5 h-1.5 rounded-full bg-cyan-500/10" />
+               <div className="w-1.5 h-1.5 rounded-full bg-cyan-500/30" />
+               <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
+            </div>
+          </div>
+          
+          {/* TodoList needs its internal text reduced to ~13px or 14px */}
+          <div className="rounded-2xl overflow-hidden border border-white/5 bg-white/[0.01]">
+            <TodoList 
+              todos={todos} 
+              onUpdate={handleUpdate} 
+              onDelete={handleDelete} 
+            />
+          </div>
+        </section>
+      </main>
 
-      {/* Add todo form */}
-      <TodoForm onSubmit={handleCreate} />
-
-      {/* Todo list */}
-      <TodoList todos={todos} onUpdate={handleUpdate} onDelete={handleDelete} />
-
-      {/* AI Chat Widget */}
-      <ChatWidget />
-
-      {/* Responsive styles */}
-      <style jsx>{`
-        @media (max-width: 768px) {
-          div {
-            padding: 20px 15px;
-          }
-          h1 {
-            font-size: 28px !important;
-          }
-        }
-
-        @media (max-width: 480px) {
-          div {
-            padding: 15px 10px;
-          }
-          h1 {
-            font-size: 24px !important;
-          }
-        }
-      `}</style>
+      <footer className="py-10 text-center opacity-20">
+        <p className="text-[8px] font-bold tracking-[1em] text-gray-500 uppercase">
+          SECURE PROTOCOL ACTIVE
+        </p>
+      </footer>
     </div>
   )
 }
